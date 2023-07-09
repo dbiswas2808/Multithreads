@@ -2,9 +2,9 @@
 #include <tuple>
 
 namespace multithreads {
-ThreadPool::ThreadPool() {
+ThreadPool::ThreadPool(int numThreas) {
     stopFlag = false;
-    for (int i = 0; i < std::thread::hardware_concurrency(); i++) {
+    for (int ii = 0; ii < numThreas; ii++) {
         workers.emplace_back([this] {
             while (true) {
                 std::function<void()> task;

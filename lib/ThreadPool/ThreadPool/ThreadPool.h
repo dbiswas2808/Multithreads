@@ -10,7 +10,7 @@ namespace multithreads {
 
 class ThreadPool {
 public:
-    ThreadPool();
+    ThreadPool(int numThreas = std::thread::hardware_concurrency());
     ~ThreadPool();
     void addTask(std::function<void()> task);
     void stop();
