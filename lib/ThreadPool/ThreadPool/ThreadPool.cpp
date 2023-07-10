@@ -2,9 +2,28 @@
 #include <tuple>
 
 namespace multithreads {
-ThreadPool::ThreadPool(int numThreas) {
+ThreadPool::ThreadPool(int numThreads) {
     stopFlag = false;
-    for (int ii = 0; ii < numThreas; ii++) {
+    makeThreads(numThreads);
+}
+
+ThreadPool::~ThreadPool() { stop(); }
+
+void ThreadPool::stop() {
+    stopFlag = true;
+    cv.notify_all();
+}
+
+void ThreadPool::addTask(std::function<void()> task) {
+    {
+        std::lock_guard lock(qMutex);
+        tasks.push(task);
+    }
+    cv.notify_one();
+}
+
+void ThreadPool::makeThreads(int numThreads) {
+    for (int ii = 0; ii < numThreads; ii++) {
         workers.emplace_back([this] {
             while (true) {
                 std::function<void()> task;
@@ -21,22 +40,5 @@ ThreadPool::ThreadPool(int numThreas) {
             }
         });
     }
-}
-
-ThreadPool::~ThreadPool() {
-    stop();
-}
-
-void ThreadPool::stop() {
-    stopFlag = true;  
-    cv.notify_all();
-}
-
-void ThreadPool::addTask(std::function<void()> task) {
-    {
-        std::lock_guard lock(qMutex);
-        tasks.push(task);
-    }
-    cv.notify_one();
 }
 } // namespace multithreads
